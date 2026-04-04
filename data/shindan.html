@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>恋愛つまずき診断｜ラビ博士</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --pink: #e83e8c; --pink-dark: #c2185b; --pink-glow: rgba(232,62,140,0.22);
+  --bg: #08080f; --surface: #111120; --surface2: #18182a; --border: #252540;
+  --text: #f0f0f8; --muted: #6b6b90;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+.bg-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 60% 40% at 80% 15%, rgba(232,62,140,0.07) 0%,transparent 60%),
+              radial-gradient(ellipse 50% 60% at 10% 85%, rgba(100,60,180,0.05) 0%,transparent 60%); }
+.container { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; padding: 0 18px 80px; }
+
+/* TOP */
+#screen-top { display:flex; flex-direction:column; align-items:center; justify-content:center;
+  min-height:100vh; text-align:center; padding:40px 0; }
+.top-badge { display:inline-flex; align-items:center; gap:6px;
+  background:rgba(232,62,140,0.12); border:1px solid rgba(232,62,140,0.35);
+  color:var(--pink); font-size:11px; font-weight:700; letter-spacing:.12em;
+  padding:5px 14px; border-radius:20px; margin-bottom:28px; }
+.top-badge::before { content:'●'; font-size:7px; animation:blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
+#screen-top h1 { font-size:clamp(21px,6vw,30px); font-weight:900; line-height:1.55; margin-bottom:16px; }
+#screen-top h1 em { font-style:normal; color:var(--pink); }
+.top-sub { font-size:13px; color:var(--muted); line-height:1.9; margin-bottom:14px; max-width:360px; }
+.top-flow { display:flex; gap:0; justify-content:center; margin-bottom:36px; }
+.flow-step { display:flex; flex-direction:column; align-items:center; gap:6px; width:80px; }
+.flow-dot { width:36px; height:36px; border-radius:50%;
+  background:rgba(232,62,140,0.12); border:1px solid rgba(232,62,140,0.3);
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; font-weight:800; color:var(--pink); }
+.flow-label { font-size:10px; color:var(--muted); text-align:center; line-height:1.4; }
+.flow-arrow { color:#333; font-size:16px; align-self:center; margin: 0 -4px; padding-bottom:18px; }
+.btn-start { width:100%; max-width:320px; padding:20px 32px;
+  background:linear-gradient(135deg,var(--pink),var(--pink-dark)); color:#fff;
+  font-size:16px; font-weight:800; border:none; border-radius:14px; cursor:pointer;
+  letter-spacing:.06em; box-shadow:0 8px 32px var(--pink-glow);
+  transition:transform .15s, box-shadow .15s; }
+.btn-start:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(232,62,140,.4); }
+.top-note { margin-top:16px; font-size:12px; color:var(--muted); }
+
+/* PROGRESS */
+#screen-quiz { display:none; padding-top:28px; }
+.progress-wrap { margin-bottom:28px; }
+.progress-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.step-label { font-size:11px; color:var(--muted); letter-spacing:.08em; }
+.step-num { font-size:13px; font-weight:700; color:var(--pink); }
+.progress-bar-bg { width:100%; height:4px; background:var(--border); border-radius:4px; overflow:hidden; }
+.progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--pink),#ff6eb0);
+  border-radius:4px; transition:width .4s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 0 8px var(--pink-glow); }
+
+/* QUESTION */
+.q-wrap { position:relative; min-height:200px; }
+.q-card { position:absolute; width:100%; opacity:0; transform:translateX(48px);
+  transition:opacity .35s ease, transform .35s ease; pointer-events:none; }
+.q-card.active { opacity:1; transform:translateX(0); pointer-events:auto; position:relative; }
+.q-card.exit-left { opacity:0; transform:translateX(-48px); }
+
+.q-tag { display:inline-block; font-size:10px; font-weight:700; letter-spacing:.1em;
+  padding:3px 10px; border-radius:20px; margin-bottom:14px;
+  background:rgba(232,62,140,0.12); color:var(--pink); border:1px solid rgba(232,62,140,.3); }
+.q-text { font-size:clamp(16px,4.5vw,20px); font-weight:800; line-height:1.6; margin-bottom:24px; }
+
+/* 選択肢 */
+.choices { display:flex; flex-direction:column; gap:10px; }
+.choice { display:flex; align-items:center; gap:14px; padding:16px 18px;
+  background:var(--surface); border:1.5px solid var(--border);
+  border-radius:14px; cursor:pointer; transition:all .2s;
+  font-size:14px; font-weight:600; color:var(--text); text-align:left; }
+.choice:hover { border-color:rgba(232,62,140,.45); background:var(--surface2); transform:translateX(4px); }
+.choice-label { width:28px; height:28px; border-radius:50%; border:1.5px solid #333;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; color:var(--muted); flex-shrink:0; }
+.choice.selecting { border-color:var(--pink); background:rgba(232,62,140,.07); }
+.choice.selecting .choice-label { background:var(--pink); border-color:var(--pink); color:#fff; }
+
+/* RESULT */
+#screen-result { display:none; padding-top:24px; }
+
+.result-hero { text-align:center; padding:20px 0 28px; }
+.result-phase-tag { display:inline-block; font-size:15px; font-weight:800;
+  letter-spacing:.05em; padding:8px 20px; border-radius:20px; margin-bottom:20px;
+  border:1px solid; }
+.result-hero h2 { font-size:clamp(20px,5.5vw,26px); font-weight:900; line-height:1.6;
+  margin-bottom:10px; white-space:pre-line; }
+.result-hero .hero-sub { font-size:13px; color:var(--muted); line-height:1.75; }
+
+/* 3層カード */
+.layer-cards { display:flex; flex-direction:column; gap:12px; margin-bottom:16px; }
+.layer-card { border-radius:16px; padding:22px; border:1px solid var(--border);
+  opacity:0; transform:translateY(18px); transition:opacity .5s ease, transform .5s ease; }
+.layer-card.visible { opacity:1; transform:translateY(0); }
+.layer-card.layer-1 { background:var(--surface); }
+.layer-card.layer-2 { background:#110e1f; border-color:#2a224a; }
+.layer-card.layer-3 { background:rgba(232,62,140,.05); border-color:rgba(232,62,140,.3); }
+
+.layer-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.layer-num { width:28px; height:28px; border-radius:50%; display:flex; align-items:center;
+  justify-content:center; font-size:12px; font-weight:800; flex-shrink:0; }
+.layer-1 .layer-num { background:rgba(100,100,255,.15); color:#8888ff; border:1px solid #3333aa; }
+.layer-2 .layer-num { background:rgba(255,180,40,.12); color:#f0b429; border:1px solid #6b4e00; }
+.layer-3 .layer-num { background:rgba(232,62,140,.15); color:var(--pink); border:1px solid rgba(232,62,140,.4); }
+.layer-title { font-size:11px; font-weight:700; letter-spacing:.1em; color:var(--muted); }
+.layer-content { font-size:14px; line-height:1.85; color:#ccc; }
+.layer-content strong { color:var(--text); font-weight:700; display:block; margin-bottom:4px; }
+.cause-list { display:flex; flex-direction:column; gap:8px; margin-top:6px; }
+.cause-item { display:flex; gap:10px; font-size:13px; line-height:1.6; color:#bbb; align-items:flex-start; }
+.cause-item::before { content:'→'; color:var(--pink); font-weight:700; flex-shrink:0; }
+.priority-list { display:flex; flex-direction:column; gap:10px; margin-top:6px; }
+.priority-item { background:rgba(232,62,140,.07); border:1px solid rgba(232,62,140,.2);
+  border-radius:10px; padding:12px 14px; }
+.priority-rank { font-size:10px; font-weight:700; color:var(--pink); letter-spacing:.08em; margin-bottom:4px; }
+.priority-text { font-size:13px; line-height:1.6; color:#ccc; }
+
+/* CTA */
+.cta-card { background:linear-gradient(135deg,#150a12,#0f0f22);
+  border:1px solid rgba(232,62,140,.4); border-radius:18px; padding:28px 22px;
+  text-align:center; margin-bottom:12px;
+  opacity:0; transform:translateY(18px);
+  transition:opacity .5s ease .65s, transform .5s ease .65s;
+  box-shadow:0 4px 40px rgba(232,62,140,.08); }
+.cta-card.visible { opacity:1; transform:translateY(0); }
+.cta-eyebrow { font-size:11px; color:var(--pink); font-weight:700;
+  letter-spacing:.1em; margin-bottom:14px; }
+.cta-card h3 { font-size:clamp(16px,4.5vw,20px); font-weight:900; line-height:1.55; margin-bottom:10px; }
+.cta-card p { font-size:13px; color:var(--muted); line-height:1.75; margin-bottom:22px; }
+.note-chapters { text-align:left; margin-bottom:22px; display:flex; flex-direction:column; gap:6px; }
+.note-chapter { display:flex; align-items:center; gap:10px; padding:10px 14px;
+  background:rgba(255,255,255,.04); border-radius:10px; font-size:13px; color:#ccc; }
+.note-chapter .ch-num { width:22px; height:22px; border-radius:50%;
+  background:rgba(232,62,140,.2); color:var(--pink); font-size:11px; font-weight:700;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.note-chapter.highlight { background:rgba(232,62,140,.1); border:1px solid rgba(232,62,140,.25); color:#f0f0f8; }
+
+.btn-cta { display:block; width:100%; padding:18px; background:#fff; color:#111;
+  font-size:15px; font-weight:800; border:none; border-radius:12px; cursor:pointer;
+  text-decoration:none; letter-spacing:.03em; transition:opacity .2s,transform .2s; }
+.btn-cta:hover { opacity:.87; transform:translateY(-1px); }
+.btn-retry { display:block; width:100%; padding:14px; background:transparent;
+  color:var(--muted); font-size:13px; border:1px solid var(--border); border-radius:12px;
+  cursor:pointer; margin-top:10px; transition:color .2s,border-color .2s; }
+.btn-retry:hover { color:var(--text); border-color:#555; }
+.btn-back { display:inline-flex; align-items:center; gap:6px; margin-bottom:20px;
+  background:transparent; border:none; color:var(--muted); font-size:13px;
+  cursor:pointer; padding:4px 0; transition:color .2s; }
+.btn-back:hover { color:var(--text); }
+.btn-back::before { content:'←'; }
+.footer { text-align:center; margin-top:40px; font-size:11px; color:#3a3a55; }
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div class="container">
+
+<!-- TOP -->
+<div id="screen-top">
+  <div class="top-badge">恋愛つまずき診断</div>
+  <h1>なぜあなたの恋愛は<br><em>うまくいかないのか</em></h1>
+  <p class="top-sub">9つの質問に答えるだけで、<br>あなたの恋愛のつまずきパターンと<br>最初に直すべきことがわかります。</p>
+  <div class="top-flow">
+    <div class="flow-step">
+      <div class="flow-dot">1</div>
+      <div class="flow-label">パターンを<br>特定する</div>
+    </div>
+    <div class="flow-arrow">›</div>
+    <div class="flow-step">
+      <div class="flow-dot">2</div>
+      <div class="flow-label">原因を<br>掘り下げる</div>
+    </div>
+    <div class="flow-arrow">›</div>
+    <div class="flow-step">
+      <div class="flow-dot">3</div>
+      <div class="flow-label">最初に<br>直すことを知る</div>
+    </div>
+  </div>
+  <button class="btn-start" onclick="startQuiz()">診断をはじめる →</button>
+  <p class="top-note">登録不要・完全無料・9問約2分</p>
+</div>
+
+<!-- QUIZ -->
+<div id="screen-quiz">
+  <button class="btn-back" id="backBtn" onclick="goBack()">前に戻る</button>
+  <div class="progress-wrap">
+    <div class="progress-header">
+      <span class="step-label">STEP</span>
+      <span class="step-num" id="stepNum">1 / 9</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+  <div class="q-wrap" id="qWrap"></div>
+</div>
+
+<!-- RESULT -->
+<div id="screen-result">
+  <div class="result-hero">
+    <div class="result-phase-tag" id="phaseTag"></div>
+    <h2 id="resultTitle"></h2>
+    <p class="hero-sub" id="resultSub"></p>
+  </div>
+
+  <div class="layer-cards">
+    <div class="layer-card layer-1" id="card1" style="transition-delay:.1s">
+      <div class="layer-header">
+        <div class="layer-num">1</div>
+        <div class="layer-title">このタイプに起きやすいこと</div>
+      </div>
+      <div class="layer-content" id="layer1Content"></div>
+    </div>
+    <div class="layer-card layer-2" id="card2" style="transition-delay:.25s">
+      <div class="layer-header">
+        <div class="layer-num">2</div>
+        <div class="layer-title">なぜそれが起きているか</div>
+      </div>
+      <div class="layer-content" id="layer2Content"></div>
+    </div>
+    <div class="layer-card layer-3" id="card3" style="transition-delay:.4s">
+      <div class="layer-header">
+        <div class="layer-num">3</div>
+        <div class="layer-title">何を先に直すべきか</div>
+      </div>
+      <div class="layer-content" id="layer3Content"></div>
+    </div>
+  </div>
+
+  <div class="cta-card" id="ctaCard">
+    <div class="cta-eyebrow">NEXT STEP</div>
+    <h3 id="ctaTitle"></h3>
+    <p id="ctaDesc"></p>
+    <div class="note-chapters" id="noteChapters"></div>
+    <a class="btn-cta" href="#" target="_blank" id="ctaBtn">詳しい改善法を読む →</a>
+    <button class="btn-retry" onclick="goBackToQuiz()">← 前の質問に戻る</button>
+    <button class="btn-retry" onclick="retry()" style="margin-top:6px">最初からやり直す</button>
+  </div>
+</div>
+
+<div class="footer">ラビ博士｜恋愛を科学する</div>
+</div>
+
+<script>
+// ─── 質問データ（9問） ───
+const QUESTIONS = [
+  {
+    id: 'Q1', text: '気になる相手ができたとき、自分にいちばん近いのはどれですか？',
+    choices: [
+      { key: 'A', label: 'いい人だとは思われるけど、恋愛に発展しにくい',
+        scores: { L:2,K:0,A:0,L1:1,L2:0,K1:0,K2:0,A1:1,A2:0 } },
+      { key: 'B', label: '少しでも好感触があると期待してしまう',
+        scores: { L:0,K:2,A:0,L1:0,L2:0,K1:1,K2:0,A1:0,A2:0 } },
+      { key: 'C', label: 'そもそも会うところまで進みにくい',
+        scores: { L:0,K:0,A:2,L1:0,L2:0,K1:0,K2:0,A1:1,A2:0 } },
+    ]
+  },
+  {
+    id: 'Q2', text: '恋愛でうまくいかないと感じる瞬間はどれですか？',
+    choices: [
+      { key: 'A', label: '悪い印象ではないのに選ばれない',
+        scores: { L:2,K:0,A:0,L1:1,L2:0,K1:0,K2:0,A1:0,A2:0 } },
+      { key: 'B', label: '相手の反応に気持ちが振り回される',
+        scores: { L:0,K:2,A:0,L1:0,L2:0,K1:0,K2:1,A1:0,A2:0 } },
+      { key: 'C', label: '出会いの段階で止まりやすい',
+        scores: { L:0,K:0,A:2,L1:0,L2:0,K1:0,K2:0,A1:1,A2:0 } },
+    ]
+  },
+  {
+    id: 'Q3', text: '自分の恋愛でいちばん多いパターンはどれですか？',
+    choices: [
+      { key: 'A', label: 'やさしい、真面目とは言われる',
+        scores: { L:2,K:0,A:0,L1:0,L2:1,K1:0,K2:0,A1:0,A2:0 } },
+      { key: 'B', label: '相手を好きになるスピードが早い',
+        scores: { L:0,K:2,A:0,L1:0,L2:0,K1:2,K2:0,A1:0,A2:0 } },
+      { key: 'C', label: 'マッチングアプリで苦戦しやすい',
+        scores: { L:0,K:0,A:2,L1:0,L2:0,K1:0,K2:0,A1:1,A2:0 } },
+    ]
+  },
+  {
+    id: 'Q4', text: '相手との距離感で近いのはどれですか？',
+    choices: [
+      { key: 'A', label: '当たり障りなく接しすぎてしまう',
+        scores: { L:1,K:0,A:0,L1:2,L2:0,K1:0,K2:0,A1:0,A2:0 } },
+      { key: 'B', label: '相手の反応が気になって詰めすぎる',
+        scores: { L:0,K:1,A:0,L1:0,L2:0,K1:0,K2:2,A1:0,A2:0 } },
+      { key: 'C', label: '距離を詰める前に関係が切れる',
+        scores: { L:0,K:0,A:1,L1:0,L2:0,K1:0,K2:0,A1:0,A2:2 } },
+    ]
+  },
+  {
+    id: 'Q5', text: '恋愛でしんどくなりやすい理由はどれですか？',
+    choices: [
+      { key: 'A', label: '自分なりに誠実なのに報われない',
+        scores: { L:1,K:0,A:0,L1:0,L2:2,K1:0,K2:0,A1:0,A2:0 } },
+      { key: 'B', label: '期待したぶん落ち込む',
+        scores: { L:0,K:1,A:0,L1:0,L2:0,K1:2,K2:0,A1:0,A2:0 } },
+      { key: 'C', label: '何が悪いのかわからないまま終わる',
+        scores: { L:0,K:0,A:1,L1:0,L2:0,K1:0,K2:0,A1:2,A2:0 } },
+    ]
+  },
+  {
+    id: 'Q6', text: 'デートややり取りの中で近いのはどれですか？',
+    choices: [
+      { key: 'A', label: '無難にまとめすぎる',
+        scores: { L:1,K:0,A:0,L1:2,L2:0,K1:0,K2:0,A1:0,A2:0 } },
+      { key: 'B', label: '相手の温度感を気にしすぎる',
+        scores: { L:0,K:1,A:0,L1:0,L2:0,K1:0,K2:2,A1:0,A2:0 } },
+      { key: 'C', label: '会話や流れが続かない',
+        scores: { L:0,K:0,A:1,L1:0,L2:0,K1:0,K2:0,A1:0,A2:2 } },
+    ]
+  },
+  {
+    id: 'Q7', text: '自分の課題だと感じるのはどれですか？',
+    choices: [
+      { key: 'A', label: '恋愛対象として見られる見せ方',
+        scores: { L:2,K:0,A:0,L1:1,L2:0,K1:0,K2:0,A1:0,A2:0 } },
+      { key: 'B', label: '気持ちの入り方と見極め',
+        scores: { L:0,K:2,A:0,L1:0,L2:0,K1:1,K2:0,A1:0,A2:0 } },
+      { key: 'C', label: '出会いから関係を進める設計',
+        scores: { L:0,K:0,A:2,L1:0,L2:0,K1:0,K2:0,A1:0,A2:1 } },
+    ]
+  },
+  {
+    id: 'Q8', text: '恋愛で一番怖いのはどれですか？',
+    choices: [
+      { key: 'A', label: '何も悪くないのに選ばれないこと',
+        scores: { L:1,K:0,A:0,L1:0,L2:2,K1:0,K2:0,A1:0,A2:0 } },
+      { key: 'B', label: '期待していたのに違ったとわかること',
+        scores: { L:0,K:1,A:0,L1:0,L2:0,K1:0,K2:2,A1:0,A2:0 } },
+      { key: 'C', label: 'そもそもチャンスが続かないこと',
+        scores: { L:0,K:0,A:1,L1:0,L2:0,K1:0,K2:0,A1:2,A2:0 } },
+    ]
+  },
+  {
+    id: 'Q9', text: '今いちばん知りたいのはどれですか？',
+    choices: [
+      { key: 'A', label: 'いい人止まりを抜ける方法',
+        scores: { L:2,K:0,A:0,L1:1,L2:1,K1:0,K2:0,A1:0,A2:0 } },
+      { key: 'B', label: '期待しすぎず進める方法',
+        scores: { L:0,K:2,A:0,L1:0,L2:0,K1:1,K2:1,A1:0,A2:0 } },
+      { key: 'C', label: 'アプリで結果を出すための改善点',
+        scores: { L:0,K:0,A:2,L1:0,L2:0,K1:0,K2:0,A1:1,A2:1 } },
+    ]
+  },
+];
+
+// ─── 結果データ（6タイプ） ───
+const RESULTS = {
+  L1: {
+    phaseLabel: 'いい人止まりタイプ・無難化型', phaseColor: '#4a9eff',
+    title: '誠実さは伝わっているのに\n印象が残りにくいタイプです',
+    sub: '悪く思われることは少なくても「それ以上ではない」で止まりやすい傾向があります。',
+    layer1: {
+      strong: '恋愛対象として選ばれない',
+      text: '感じはいい、やさしい、安心感もある。でも感情が動く前に終わりやすい。友人や知人止まりになりやすいのが特徴です。'
+    },
+    layer2: [
+      '会話や態度が安全すぎて、相手の感情が動くきっかけが生まれていない',
+      '相手に合わせすぎて、自分の輪郭や温度感が見えにくくなっている',
+      '無難さの積み重ねが「安心できる人」止まりの印象を作っている',
+    ],
+    layer3: [
+      { rank: '最優先', text: '自分の考えや感じ方を、少しだけ出すことから始める' },
+      { rank: '次に', text: '相手に興味を向けるだけでなく、自分の輪郭も見せる' },
+      { rank: '並行して', text: '当たり障りなくまとめるのをやめ、一つだけ踏み込んでみる' },
+    ],
+    ctaTitle: 'いい人止まりを抜けるための\n具体的な方法',
+    ctaDesc: '印象の残し方・好意の見せ方・温度の伝え方をnoteで詳しく解説しています。',
+    noteKey: 'L',
+    chapters: ['いい人止まりが起きる本当の理由','無難化型の思考パターンと抜け方','温度が伝わる見せ方の設計','踏み込むべき場面の見極め方'],
+    highlightChapter: 1,
+  },
+  L2: {
+    phaseLabel: 'いい人止まりタイプ・遠慮過多型', phaseColor: '#4a9eff',
+    title: '気遣いはあるのに\n踏み込めないまま終わりやすいタイプです',
+    sub: '嫌われたくない気持ちが強いぶん、相手には温度が低い人のように見えやすくなっています。',
+    layer1: {
+      strong: '誠実さが伝わらずに終わる',
+      text: '相手を大切にしている。負担をかけたくない。でもその遠慮が強すぎて、好意が届かないまま関係が止まりやすくなっています。'
+    },
+    layer2: [
+      '踏み込むべき場面で引いてしまい、関係が動く前に止まっている',
+      '遠慮と気遣いが混同されていて、好意を見せることを控えすぎている',
+      '相手に合わせることが優先されて、自分から流れを作れていない',
+    ],
+    layer3: [
+      { rank: '最優先', text: '遠慮と気遣いを分けて考える（気遣いはしていい、遠慮は減らす）' },
+      { rank: '次に', text: '好意を見せる場面で引かないことを一つ決める' },
+      { rank: '並行して', text: '予定を決める・次の話を振るなど、自分から小さく動く場面を増やす' },
+    ],
+    ctaTitle: 'いい人止まりを抜けるための\n具体的な方法',
+    ctaDesc: '踏み込み方の設計・好意の伝え方・距離の縮め方をnoteで詳しく解説しています。',
+    noteKey: 'L',
+    chapters: ['いい人止まりが起きる本当の理由','遠慮過多型の思考パターンと抜け方','好意が伝わる動き方の設計','踏み込むべき場面の見極め方'],
+    highlightChapter: 2,
+  },
+  K1: {
+    phaseLabel: '期待先行タイプ・妄想先行型', phaseColor: '#f0b429',
+    title: '少しの手応えで期待が膨らみ\n空回りしやすいタイプです',
+    sub: '相手をよく見る前に気持ちが入り、終わったときの落差が大きくなりやすい傾向があります。',
+    layer1: {
+      strong: '期待が先行して消耗しやすい',
+      text: '会話が続く、反応が悪くない、少し褒められた。そうした要素を本気度の高さだと受け取りやすく、浅い関係でも気持ちが先に進みやすいです。'
+    },
+    layer2: [
+      '事実より先に気持ちが動いてしまい、相手のペースと合わない',
+      '好感触を「脈あり」の確証と受け取りやすく、判断が早まる',
+      '期待が高まった分だけ、違ったときの消耗も大きくなりやすい',
+    ],
+    layer3: [
+      { rank: '最優先', text: '期待より先に事実を見る習慣を持つ（行動ベースで判断する）' },
+      { rank: '次に', text: '一時的な好感触と継続的な関心を分けて考える' },
+      { rank: '並行して', text: '気持ちが動いたときほど、判断を一拍置く癖をつける' },
+    ],
+    ctaTitle: '期待先行を整えて\n恋愛を楽にする方法',
+    ctaDesc: '脈ありと勘違いしやすい場面・判断の軸・気持ちのコントロールをnoteで解説しています。',
+    noteKey: 'K',
+    chapters: ['期待先行タイプが陥るパターン','妄想先行型の思考の流れ','事実ベースで判断する習慣','期待と現実のキャリブレーション'],
+    highlightChapter: 2,
+  },
+  K2: {
+    phaseLabel: '期待先行タイプ・不安過敏型', phaseColor: '#f0b429',
+    title: '相手の小さな変化に振り回されて\nしんどくなりやすいタイプです',
+    sub: '相手の反応以上に、自分の不安で恋愛をしんどくしていることがこのタイプの特徴です。',
+    layer1: {
+      strong: '反応に気持ちが振り回される',
+      text: '返信が遅い、少しそっけない、前より温度が低い気がする。そうした変化を強く受け取り、自分の中で不安が大きくなりやすいのが特徴です。'
+    },
+    layer2: [
+      '相手の小さな変化に敏感で、まだ確定していないことで結論を出しやすい',
+      '不安から行動（確認・連絡の増加）が起きやすく、相手との温度差が生まれる',
+      '自分の感情を相手の反応で調節しようとしているため、安定しにくい',
+    ],
+    layer3: [
+      { rank: '最優先', text: '反応の一部だけで結論を出さず、一拍置いてから判断する' },
+      { rank: '次に', text: '相手の反応を自分の価値と切り離して考える習慣を持つ' },
+      { rank: '並行して', text: '恋愛以外の充実を作り、相手への依存度を下げる' },
+    ],
+    ctaTitle: '期待先行を整えて\n恋愛を楽にする方法',
+    ctaDesc: '不安過敏型の思考パターン・反応への対処・感情の安定化をnoteで解説しています。',
+    noteKey: 'K',
+    chapters: ['期待先行タイプが陥るパターン','不安過敏型の思考の流れ','反応への対処と感情の安定','自分軸で動くための設計'],
+    highlightChapter: 3,
+  },
+  A1: {
+    phaseLabel: 'アプリ失速タイプ・プロフ弱者型', phaseColor: '#4caf8a',
+    title: '中身の前に\n見せ方の段階で損しているタイプです',
+    sub: '魅力がないから進まないのではなく、魅力が届く前に止まっている可能性があります。',
+    layer1: {
+      strong: 'マッチが取れない・何が悪いかわからない',
+      text: '真面目に取り組んでいるのに結果が出ない。写真が無難すぎる、プロフィール文が事務的すぎる、条件だけで人柄が見えにくいといった状態が起きやすいです。'
+    },
+    layer2: [
+      '写真やプロフィール文が「無難」で印象に残らず、スワイプで止まれない',
+      '自己紹介が条件・スペックの羅列になっていて、人柄が伝わりにくい',
+      '何が悪いか自分ではわからないまま、同じ状態が続きやすい',
+    ],
+    layer3: [
+      { rank: '最優先', text: '写真を「清潔感＋表情が伝わる」ものに撮り直す' },
+      { rank: '次に', text: 'プロフィール文を条件より人柄が伝わる内容に書き直す' },
+      { rank: '並行して', text: '掲載写真を複数枚使い、生活感や趣味も見せる' },
+    ],
+    ctaTitle: 'アプリで結果を出すための\n入口設計の直し方',
+    ctaDesc: 'プロフ写真・自己紹介文・マッチ率改善の具体的な方法をnoteで解説しています。',
+    noteKey: 'A',
+    chapters: ['アプリ失速タイプに共通する問題','プロフ弱者型の見せ方の改善','写真と自己紹介文の設計','マッチ後の流れの作り方'],
+    highlightChapter: 2,
+  },
+  A2: {
+    phaseLabel: 'アプリ失速タイプ・会話失速型', phaseColor: '#4caf8a',
+    title: 'マッチ後の流れが止まりやすく\n自然消滅しやすいタイプです',
+    sub: '関係を深める前に止まってしまうのは、会話設計と誘い方にズレがあるからです。',
+    layer1: {
+      strong: 'マッチ後に失速・自然消滅しやすい',
+      text: 'やり取りは始まる。でも盛り上がりきらない。会う前に終わる。会えても次につながらない。会話のテンポや誘うタイミングのズレが出やすいのが特徴です。'
+    },
+    layer2: [
+      '質問だけで続く会話になっていて、盛り上がる前に相手の熱量が下がっている',
+      '会うまでのやり取りを引っ張りすぎて、タイミングを逃しやすい',
+      '真面目さが退屈さに見えてしまい、次につながりにくくなっている',
+    ],
+    layer3: [
+      { rank: '最優先', text: '質問だけで返さず、自分の話や感想もセットで送る' },
+      { rank: '次に', text: '3〜5往復したら会う方向に話を進める流れを持つ' },
+      { rank: '並行して', text: '誘い方のパターンを一つ決めて、タイミングを早める' },
+    ],
+    ctaTitle: 'アプリで結果を出すための\n会話と誘い方の設計',
+    ctaDesc: 'マッチ後の会話・誘い方・次につながるデートの作り方をnoteで解説しています。',
+    noteKey: 'A',
+    chapters: ['アプリ失速タイプに共通する問題','会話失速型のパターンと対処','やり取りと誘い方の設計','会えた後に次につなげる方法'],
+    highlightChapter: 3,
+  },
+};
+
+// LIFF ID（LINE Developersで発行後に記入）
+const LIFF_ID = 'YOUR_LIFF_ID';
+
+// LIFF初期化
+(async () => {
+  try {
+    if (typeof liff !== 'undefined') {
+      await liff.init({ liffId: LIFF_ID });
+    }
+  } catch(e) {
+    console.warn('LIFF init skipped:', e.message);
+  }
+})();
+
+// 診断結果をLINEトークに送信
+async function sendResultToLine(resultType) {
+  try {
+    if (typeof liff === 'undefined' || !liff.isInClient()) return;
+    await liff.sendMessages([{ type: 'text', text: `診断結果:${resultType}` }]);
+  } catch(e) {
+    console.warn('LIFF sendMessages failed:', e.message);
+  }
+}
+
+// note URL（公開後に記入）
+const NOTE_URLS = {
+  L: '',
+  K: '',
+  A: '',
+};
+
+// ─── スコアリング ───
+function calcResult(answers) {
+  const score = { L:0,K:0,A:0,L1:0,L2:0,K1:0,K2:0,A1:0,A2:0 };
+  for (const q of QUESTIONS) {
+    const key = answers[q.id];
+    if (!key) continue;
+    const choice = q.choices.find(c => c.key === key);
+    if (!choice) continue;
+    for (const [type, pt] of Object.entries(choice.scores)) score[type] += pt;
+  }
+
+  // 大分類
+  let mainType = maxKey({ L:score.L, K:score.K, A:score.A });
+  const mainTied = topTied({ L:score.L, K:score.K, A:score.A });
+  if (mainTied.length > 1) mainType = resolveMainTie(answers, mainTied);
+
+  // サブタイプ
+  const subScores = mainType === 'L' ? { L1:score.L1, L2:score.L2 }
+                  : mainType === 'K' ? { K1:score.K1, K2:score.K2 }
+                  :                    { A1:score.A1, A2:score.A2 };
+  let subType = maxKey(subScores);
+  const subTied = topTied(subScores);
+  if (subTied.length > 1) subType = resolveSubTie(mainType, answers, subTied);
+
+  return subType;
+}
+
+function resolveMainTie(answers, tiedTypes) {
+  const MAP = { A:'L', B:'K', C:'A' };
+  for (const qid of ['Q9','Q7','Q1']) {
+    const mapped = MAP[answers[qid]];
+    if (mapped && tiedTypes.includes(mapped)) return mapped;
+  }
+  return tiedTypes[0];
+}
+
+function resolveSubTie(mainType, answers, tiedSubs) {
+  const PRIORITY = { L:['Q4','Q6','Q8'], K:['Q4','Q6','Q8'], A:['Q4','Q6','Q5'] };
+  const MAP = { L:{A:'L1',B:'L2',C:'L2'}, K:{A:'K1',B:'K2',C:'K2'}, A:{A:'A1',B:'A2',C:'A2'} };
+  for (const qid of PRIORITY[mainType]) {
+    const mapped = MAP[mainType][answers[qid]];
+    if (mapped && tiedSubs.includes(mapped)) return mapped;
+  }
+  return tiedSubs[0];
+}
+
+function maxKey(obj) {
+  return Object.entries(obj).sort((a,b) => b[1]-a[1])[0][0];
+}
+function topTied(obj) {
+  const max = Math.max(...Object.values(obj));
+  return Object.keys(obj).filter(k => obj[k] === max);
+}
+
+// ─── 状態 ───
+let currentIndex = 0;
+let answers = {};
+let transitioning = false;
+
+function startQuiz() {
+  document.getElementById('screen-top').style.display = 'none';
+  document.getElementById('screen-quiz').style.display = 'block';
+  renderQuestion(0);
+}
+
+function goBack() {
+  if (transitioning) return;
+  if (currentIndex === 0) {
+    // Q1 → TOP に戻る
+    document.getElementById('screen-quiz').style.display = 'none';
+    document.getElementById('qWrap').innerHTML = '';
+    answers = {};
+    document.getElementById('screen-top').style.display = 'flex';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    // 前の質問に戻る
+    transitioning = true;
+    const active = document.querySelector('.q-card.active');
+    if (active) {
+      active.style.transition = 'opacity .25s ease, transform .25s ease';
+      active.style.opacity = '0';
+      active.style.transform = 'translateX(48px)';
+      setTimeout(() => {
+        active.remove();
+        currentIndex--;
+        // 直前の回答を削除
+        delete answers[QUESTIONS[currentIndex].id];
+        renderQuestion(currentIndex);
+        transitioning = false;
+      }, 250);
+    } else {
+      transitioning = false;
+    }
+  }
+}
+
+function goBackToQuiz() {
+  // 結果画面 → Q9（最後の質問）に戻る
+  ['card1','card2','card3','ctaCard'].forEach(id =>
+    document.getElementById(id).classList.remove('visible'));
+  document.getElementById('screen-result').style.display = 'none';
+  document.getElementById('screen-quiz').style.display = 'block';
+  currentIndex = QUESTIONS.length - 1;
+  delete answers[QUESTIONS[currentIndex].id];
+  document.getElementById('qWrap').innerHTML = '';
+  renderQuestion(currentIndex);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderQuestion(index) {
+  updateProgress(index + 1, QUESTIONS.length);
+  const q = QUESTIONS[index];
+  const wrap = document.getElementById('qWrap');
+  const card = document.createElement('div');
+  card.className = 'q-card';
+  card.innerHTML = `
+    <div class="q-tag">Q${index + 1} / ${QUESTIONS.length}</div>
+    <div class="q-text">${q.text}</div>
+    <div class="choices">
+      ${q.choices.map(c => `
+        <button class="choice" onclick="answer('${q.id}','${c.key}',this)">
+          <div class="choice-label">${c.key}</div>
+          <span>${c.label}</span>
+        </button>`).join('')}
+    </div>`;
+  wrap.appendChild(card);
+  requestAnimationFrame(() => requestAnimationFrame(() => card.classList.add('active')));
+}
+
+function answer(qid, key, btn) {
+  if (transitioning) return;
+  transitioning = true;
+  answers[qid] = key;
+  btn.classList.add('selecting');
+  setTimeout(() => {
+    const active = document.querySelector('.q-card.active');
+    if (active) active.classList.add('exit-left');
+    setTimeout(() => {
+      if (active) active.remove();
+      currentIndex++;
+      if (currentIndex < QUESTIONS.length) {
+        renderQuestion(currentIndex);
+      } else {
+        showResult();
+      }
+      transitioning = false;
+    }, 350);
+  }, 200);
+}
+
+function updateProgress(current, total) {
+  document.getElementById('stepNum').textContent = `${current} / ${total}`;
+  document.getElementById('progressFill').style.width = ((current - 1) / total * 100) + '%';
+}
+
+function showResult() {
+  document.getElementById('screen-quiz').style.display = 'none';
+  const el = document.getElementById('screen-result');
+  el.style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  const resultType = calcResult(answers);
+  sendResultToLine(resultType); // LINEトークに結果を送信（LIFF内のみ有効）
+  const d = RESULTS[resultType];
+
+  // ヒーロー
+  const tag = document.getElementById('phaseTag');
+  tag.textContent = d.phaseLabel;
+  tag.style.color = d.phaseColor;
+  tag.style.borderColor = d.phaseColor;
+  tag.style.background = d.phaseColor + '18';
+  document.getElementById('resultTitle').textContent = d.title;
+  document.getElementById('resultSub').textContent = d.sub;
+
+  // Layer1
+  document.getElementById('layer1Content').innerHTML =
+    `<strong>${d.layer1.strong}</strong>${d.layer1.text}`;
+
+  // Layer2
+  document.getElementById('layer2Content').innerHTML =
+    `<div class="cause-list">${d.layer2.map(c =>
+      `<div class="cause-item">${c}</div>`).join('')}</div>`;
+
+  // Layer3
+  document.getElementById('layer3Content').innerHTML =
+    `<div class="priority-list">${d.layer3.map(p =>
+      `<div class="priority-item">
+        <div class="priority-rank">${p.rank}</div>
+        <div class="priority-text">${p.text}</div>
+      </div>`).join('')}</div>`;
+
+  // CTA
+  document.getElementById('ctaTitle').textContent = d.ctaTitle;
+  document.getElementById('ctaDesc').textContent = d.ctaDesc;
+  document.getElementById('noteChapters').innerHTML = d.chapters.map((c, i) =>
+    `<div class="note-chapter ${i + 1 === d.highlightChapter ? 'highlight' : ''}">
+      <div class="ch-num">${i + 1}</div>
+      <span>${i + 1 === d.highlightChapter ? '▶ ' : ''}第${i+1}章：${c}</span>
+    </div>`).join('');
+
+  const url = NOTE_URLS[d.noteKey];
+  const ctaBtn = document.getElementById('ctaBtn');
+  if (url) {
+    ctaBtn.href = url;
+    ctaBtn.textContent = '詳しい改善法を読む →';
+  } else {
+    ctaBtn.removeAttribute('href');
+    ctaBtn.style.background = '#333';
+    ctaBtn.style.color = '#888';
+    ctaBtn.textContent = '近日公開予定';
+    ctaBtn.style.cursor = 'default';
+  }
+
+  // アニメ
+  setTimeout(() => {
+    ['card1','card2','card3'].forEach((id, i) => {
+      setTimeout(() => document.getElementById(id).classList.add('visible'), i * 160);
+    });
+    setTimeout(() => document.getElementById('ctaCard').classList.add('visible'), 550);
+  }, 100);
+}
+
+function retry() {
+  currentIndex = 0; answers = {}; transitioning = false;
+  document.getElementById('qWrap').innerHTML = '';
+  ['card1','card2','card3','ctaCard'].forEach(id =>
+    document.getElementById(id).classList.remove('visible'));
+  document.getElementById('screen-result').style.display = 'none';
+  document.getElementById('screen-top').style.display = 'flex';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

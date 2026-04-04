@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>アプリ失速タイプ・会話失速型｜ラビ博士 限定コンテンツ</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --pink: #e83e8c; --pink-dark: #c2185b; --pink-glow: rgba(232,62,140,0.2);
+  --bg: #08080f; --surface: #111120; --surface2: #18182a; --border: #252540;
+  --text: #f0f0f8; --muted: #7070a0;
+}
+body { font-family: 'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh; }
+.bg-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 70% 40% at 80% 10%, rgba(232,62,140,0.06) 0%, transparent 60%),
+              radial-gradient(ellipse 50% 50% at 10% 90%, rgba(80,40,160,0.04) 0%, transparent 60%); }
+.container { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; padding: 40px 24px 80px; }
+.doc-header { text-align: center; padding: 48px 0 40px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+.badge { display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(232,62,140,0.1); border: 1px solid rgba(232,62,140,0.3);
+  color: var(--pink); font-size: 11px; font-weight: 700; letter-spacing: .12em;
+  padding: 5px 14px; border-radius: 20px; margin-bottom: 20px; }
+.type-label { font-size: 12px; color: var(--muted); letter-spacing: .1em; margin-bottom: 10px; }
+.doc-title { font-size: clamp(18px, 5vw, 26px); font-weight: 900; line-height: 1.6; margin-bottom: 14px; }
+.doc-title em { font-style: normal; color: var(--pink); }
+.doc-sub { font-size: 13px; color: var(--muted); line-height: 1.8; }
+.author { display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 20px; font-size: 12px; color: var(--muted); }
+.author::before, .author::after { content: ''; display: block; width: 24px; height: 1px; background: var(--border); }
+.section { margin-bottom: 36px; }
+.section-num { display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(232,62,140,0.12); border: 1px solid rgba(232,62,140,0.3);
+  color: var(--pink); font-size: 11px; font-weight: 800; margin-bottom: 12px; }
+.section-title { font-size: 11px; font-weight: 700; letter-spacing: .12em; color: var(--muted); margin-bottom: 14px; }
+.section-body { font-size: 14px; line-height: 2; color: #ccc; white-space: pre-line; }
+.section-body strong { color: var(--text); font-weight: 700; }
+.hook-card { background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px 24px; margin-bottom: 36px; }
+.hook-text { font-size: clamp(16px, 4.5vw, 20px); font-weight: 800; line-height: 1.7; white-space: pre-line; }
+.hook-text em { font-style: normal; color: var(--pink); }
+.insight-card { background: #110e1f; border: 1px solid #2a224a;
+  border-radius: 16px; padding: 28px 24px; margin-bottom: 36px; }
+.insight-label { font-size: 10px; font-weight: 700; letter-spacing: .15em; color: #8888cc; margin-bottom: 14px; }
+.insight-body { font-size: 14px; line-height: 2; color: #ccc; white-space: pre-line; }
+.partner-card { background: var(--surface2); border-left: 3px solid var(--pink);
+  border-radius: 0 12px 12px 0; padding: 20px 20px; margin-bottom: 36px; }
+.partner-label { font-size: 10px; font-weight: 700; letter-spacing: .12em; color: var(--pink); margin-bottom: 12px; }
+.quote { font-size: 15px; font-weight: 700; line-height: 1.8; color: var(--text); margin-bottom: 12px; }
+.quote::before { content: '「'; color: var(--pink); }
+.quote::after { content: '」'; color: var(--pink); }
+.partner-body { font-size: 13px; line-height: 1.9; color: #aaa; white-space: pre-line; }
+.divider { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
+.cta-section { background: linear-gradient(135deg, #150a12, #0f0f22);
+  border: 1px solid rgba(232,62,140,0.35); border-radius: 20px;
+  padding: 36px 28px; text-align: center;
+  box-shadow: 0 4px 40px rgba(232,62,140,0.08); margin-top: 48px; }
+.cta-eyebrow { font-size: 11px; color: var(--pink); font-weight: 700; letter-spacing: .12em; margin-bottom: 16px; }
+.cta-title { font-size: clamp(16px, 4.5vw, 20px); font-weight: 900; line-height: 1.6; margin-bottom: 10px; }
+.cta-sub { font-size: 13px; color: var(--muted); line-height: 1.8; margin-bottom: 24px; }
+.cta-btn { display: inline-block; padding: 16px 36px;
+  background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+  color: #fff; font-size: 14px; font-weight: 800; border-radius: 12px;
+  text-decoration: none; letter-spacing: .04em;
+  box-shadow: 0 6px 24px var(--pink-glow); }
+.note-price { display: inline-block; margin-top: 12px; font-size: 12px; color: var(--muted); }
+.print-btn { display: block; width: fit-content; margin: 32px auto 0;
+  padding: 10px 24px; background: transparent;
+  border: 1px solid var(--border); border-radius: 8px;
+  color: var(--muted); font-size: 12px; cursor: pointer; }
+.print-btn:hover { color: var(--text); border-color: #555; }
+@media print {
+  .bg-layer, .print-btn { display: none; }
+  body { background: #fff; color: #111; }
+  .hook-card, .insight-card, .partner-card { border: 1px solid #ddd; background: #f9f9f9; }
+  .doc-header { border-bottom: 1px solid #ddd; }
+  .cta-section { border: 2px solid #e83e8c; background: #fff5f9; }
+  .hook-text, .cta-title { color: #111; }
+  .section-body, .insight-body, .partner-body { color: #333; }
+  .doc-sub, .type-label, .section-title, .author { color: #666; }
+  .cta-btn { background: #e83e8c; }
+}
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div class="container">
+
+  <div class="doc-header">
+    <div class="badge">ラビ博士｜恋愛を科学する</div>
+    <div class="type-label">診断結果：アプリ失速タイプ・会話失速型</div>
+    <h1 class="doc-title">マッチはするのに<br><em>会えない人</em>の、本当の理由</h1>
+    <p class="doc-sub">あなたの恋愛がうまくいかない構造を、<br>心理学の視点から解説します。</p>
+    <div class="author">ラビ博士｜恋愛を科学する</div>
+  </div>
+
+  <div class="hook-card">
+    <p class="hook-text">「マッチはする。やり取りも続く。<br>でも、<em>会えない。</em>」<br><br>このパターンが繰り返されているなら、このタイプです。</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">1</div>
+    <div class="section-title">なぜそうなるのか——原因の構造</div>
+    <p class="section-body">会話失速型の核心は「<strong>関係を深めようとしすぎること</strong>」にあります。
+
+やり取りの中で、相手のことをよく知ろうとする。丁寧に質問する。話を広げようとする。その姿勢は誠実です。でも、アプリでのやり取りの目的は「関係を深めること」ではありません。「会う約束を取り付けること」です。
+
+長いやり取りが続くほど、「もう十分話した感」が生まれて会う必要がなくなります。</p>
+  </div>
+
+  <div class="partner-card">
+    <div class="partner-label">相手からの見え方</div>
+    <p class="quote">楽しいけど、特別感がない。このままLINEが続くだけな気がする。</p>
+    <p class="partner-body">会話が続くことと、会いたいと思われることは別です。「また返信しなきゃ」という義務感で続いているやり取りは、会う前に自然消滅しやすい。</p>
+  </div>
+
+  <div class="section">
+    <div class="section-num">2</div>
+    <div class="section-title">このタイプの核心</div>
+    <p class="section-body">アプリで成功する人は、深い話をする前に会います。
+
+「まだよく知らないけど会ってみよう」と思わせる流れを作っています。<strong>深く知ってから会うのではなく、会いながら深く知る。</strong>この順番の違いが、結果に直結しています。
+
+誘い方のタイミング、会話のテンポ、流れの設計——これが変わると、同じやり取りでも全く違う結果になります。</p>
+  </div>
+
+  <div class="insight-card">
+    <div class="insight-label">KEY INSIGHT</div>
+    <p class="insight-body">やり取りの目的 = 「関係を深めること」ではない
+やり取りの目的 = 「会う約束を取り付けること」
+
+長いやり取り → 「もう十分話した」→ 会う必要がなくなる
+
+先に会う → 会いながら深く知る
+この順番を変えると、結果が変わる。</p>
+  </div>
+
+  <hr class="divider">
+
+  <div class="cta-section">
+    <div class="cta-eyebrow">NEXT STEP</div>
+    <h2 class="cta-title">会うまでの流れをどう設計するか。<br>誘うタイミングと言い方</h2>
+    <p class="cta-sub">原因の構造はわかりました。あとは変え方だけです。<br>具体的な手順と言い方を、noteで解説しています。</p>
+    <a class="cta-btn" href="#" id="noteBtn">noteで続きを読む →</a>
+    <div class="note-price">¥500 ／ コーヒー1杯分</div>
+  </div>
+
+  <button class="print-btn" onclick="window.print()">このページをPDFで保存</button>
+
+</div>
+<script>
+const NOTE_URL = '';
+const btn = document.getElementById('noteBtn');
+if (NOTE_URL) btn.href = NOTE_URL;
+</script>
+</body>
+</html>

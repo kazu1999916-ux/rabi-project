@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>いい人止まりタイプ・無難化型｜ラビ博士 限定コンテンツ</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --pink: #e83e8c; --pink-dark: #c2185b; --pink-glow: rgba(232,62,140,0.2);
+  --bg: #08080f; --surface: #111120; --surface2: #18182a; --border: #252540;
+  --text: #f0f0f8; --muted: #7070a0;
+}
+body { font-family: 'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh; }
+.bg-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 70% 40% at 80% 10%, rgba(232,62,140,0.06) 0%, transparent 60%),
+              radial-gradient(ellipse 50% 50% at 10% 90%, rgba(80,40,160,0.04) 0%, transparent 60%); }
+.container { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* HEADER */
+.doc-header { text-align: center; padding: 48px 0 40px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+.badge { display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(232,62,140,0.1); border: 1px solid rgba(232,62,140,0.3);
+  color: var(--pink); font-size: 11px; font-weight: 700; letter-spacing: .12em;
+  padding: 5px 14px; border-radius: 20px; margin-bottom: 20px; }
+.type-label { font-size: 12px; color: var(--muted); letter-spacing: .1em; margin-bottom: 10px; }
+.doc-title { font-size: clamp(18px, 5vw, 26px); font-weight: 900; line-height: 1.6;
+  margin-bottom: 14px; white-space: pre-line; }
+.doc-title em { font-style: normal; color: var(--pink); }
+.doc-sub { font-size: 13px; color: var(--muted); line-height: 1.8; }
+.author { display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 20px; font-size: 12px; color: var(--muted); }
+.author::before { content: ''; display: block; width: 24px; height: 1px; background: var(--border); }
+.author::after { content: ''; display: block; width: 24px; height: 1px; background: var(--border); }
+
+/* SECTIONS */
+.section { margin-bottom: 36px; }
+.section-num { display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(232,62,140,0.12); border: 1px solid rgba(232,62,140,0.3);
+  color: var(--pink); font-size: 11px; font-weight: 800;
+  margin-bottom: 12px; }
+.section-title { font-size: 11px; font-weight: 700; letter-spacing: .12em;
+  color: var(--muted); margin-bottom: 14px; text-transform: uppercase; }
+.section-body { font-size: 14px; line-height: 2; color: #ccc; white-space: pre-line; }
+.section-body strong { color: var(--text); font-weight: 700; }
+
+/* HOOK CARD */
+.hook-card { background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px 24px; margin-bottom: 36px; }
+.hook-text { font-size: clamp(16px, 4.5vw, 20px); font-weight: 800; line-height: 1.7;
+  white-space: pre-line; }
+.hook-text em { font-style: normal; color: var(--pink); }
+
+/* INSIGHT CARD */
+.insight-card { background: #110e1f; border: 1px solid #2a224a;
+  border-radius: 16px; padding: 28px 24px; margin-bottom: 36px; }
+.insight-label { font-size: 10px; font-weight: 700; letter-spacing: .15em;
+  color: #8888cc; margin-bottom: 14px; }
+.insight-body { font-size: 14px; line-height: 2; color: #ccc; white-space: pre-line; }
+
+/* PARTNER VIEW */
+.partner-card { background: var(--surface2); border-left: 3px solid var(--pink);
+  border-radius: 0 12px 12px 0; padding: 20px 20px; margin-bottom: 36px; }
+.partner-label { font-size: 10px; font-weight: 700; letter-spacing: .12em;
+  color: var(--pink); margin-bottom: 12px; }
+.quote { font-size: 15px; font-weight: 700; line-height: 1.8; color: var(--text);
+  margin-bottom: 12px; }
+.quote::before { content: '「'; color: var(--pink); }
+.quote::after { content: '」'; color: var(--pink); }
+.partner-body { font-size: 13px; line-height: 1.9; color: #aaa; white-space: pre-line; }
+
+/* DIVIDER */
+.divider { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
+
+/* CTA */
+.cta-section { background: linear-gradient(135deg, #150a12, #0f0f22);
+  border: 1px solid rgba(232,62,140,0.35); border-radius: 20px;
+  padding: 36px 28px; text-align: center;
+  box-shadow: 0 4px 40px rgba(232,62,140,0.08); margin-top: 48px; }
+.cta-eyebrow { font-size: 11px; color: var(--pink); font-weight: 700;
+  letter-spacing: .12em; margin-bottom: 16px; }
+.cta-title { font-size: clamp(16px, 4.5vw, 20px); font-weight: 900; line-height: 1.6;
+  margin-bottom: 10px; }
+.cta-sub { font-size: 13px; color: var(--muted); line-height: 1.8; margin-bottom: 24px; }
+.cta-btn { display: inline-block; padding: 16px 36px;
+  background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+  color: #fff; font-size: 14px; font-weight: 800; border-radius: 12px;
+  text-decoration: none; letter-spacing: .04em;
+  box-shadow: 0 6px 24px var(--pink-glow); }
+.note-price { display: inline-block; margin-top: 12px; font-size: 12px; color: var(--muted); }
+
+/* PRINT */
+.print-btn { display: block; width: fit-content; margin: 32px auto 0;
+  padding: 10px 24px; background: transparent;
+  border: 1px solid var(--border); border-radius: 8px;
+  color: var(--muted); font-size: 12px; cursor: pointer;
+  transition: color .2s, border-color .2s; }
+.print-btn:hover { color: var(--text); border-color: #555; }
+
+@media print {
+  .bg-layer, .print-btn { display: none; }
+  body { background: #fff; color: #111; }
+  .hook-card, .insight-card, .partner-card { border: 1px solid #ddd; background: #f9f9f9; }
+  .doc-header { border-bottom: 1px solid #ddd; }
+  .cta-section { border: 2px solid #e83e8c; background: #fff5f9; }
+  .hook-text, .cta-title { color: #111; }
+  .section-body, .insight-body, .partner-body { color: #333; }
+  .doc-sub, .type-label, .section-title, .author { color: #666; }
+  .cta-btn { background: #e83e8c; }
+}
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="doc-header">
+    <div class="badge">ラビ博士｜恋愛を科学する</div>
+    <div class="type-label">診断結果：いい人止まりタイプ・無難化型</div>
+    <h1 class="doc-title">誠実なのに<em>恋愛対象にならない人</em>の、<br>本当の理由</h1>
+    <p class="doc-sub">あなたの恋愛がうまくいかない構造を、<br>心理学の視点から解説します。</p>
+    <div class="author">ラビ博士｜恋愛を科学する</div>
+  </div>
+
+  <!-- HOOK -->
+  <div class="hook-card">
+    <p class="hook-text">「感じはいいのに、なぜか<em>印象に残らない。</em>」<br><br>このフィードバックを受け取ったことがある人は、このタイプです。</p>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section">
+    <div class="section-num">1</div>
+    <div class="section-title">なぜそうなるのか——原因の構造</div>
+    <p class="section-body">無難化型の核心は「<strong>安全の最適化</strong>」にあります。
+
+失敗しないこと、嫌われないこと、場の空気を壊さないこと。それを優先するあまり、会話も態度も「安全すぎる」状態になっています。
+
+問題は、恋愛感情が動くには「摩擦」が必要だということです。ドキドキ、緊張、予測できない展開——これらはすべて、ある程度の摩擦から生まれます。摩擦をゼロにした空間では、感情も動きません。</p>
+  </div>
+
+  <!-- PARTNER VIEW -->
+  <div class="partner-card">
+    <div class="partner-label">相手からの見え方</div>
+    <p class="quote">一緒にいて居心地はいい。でも、何も起きない感じがする。</p>
+    <p class="partner-body">悪い印象ではない。でも、次に会いたいという強い気持ちが生まれにくい。恋愛対象として見るには、相手が「この人は自分のことをどう思っているんだろう」と考える瞬間が必要です。無難化型は、その余白を作れていません。</p>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section">
+    <div class="section-num">2</div>
+    <div class="section-title">このタイプの核心</div>
+    <p class="section-body">ここで重要なのは、「<strong>安心感」と「恋愛感情」は脳の別の回路で動く</strong>ということです。
+
+誠実さや気遣いは「信頼」を作ります。でも「この人と恋愛したい」という感情は、信頼とは別のところから生まれます。
+
+つまり、誠実さをいくら磨いても、恋愛対象にはなれない。変えるべきは誠実さではなく、別のことです。</p>
+  </div>
+
+  <!-- INSIGHT -->
+  <div class="insight-card">
+    <div class="insight-label">KEY INSIGHT</div>
+    <p class="insight-body">誠実さ・気遣い → 「信頼」を作る
+恋愛感情が動く → 「摩擦・余白・予測できなさ」から生まれる
+
+この2つは、別の回路で動く。
+安全を最適化するほど、恋愛対象から遠ざかる。</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <div class="cta-eyebrow">NEXT STEP</div>
+    <h2 class="cta-title">では、誠実さを捨てずに<br>「恋愛対象として見られる動き方」はどうすれば身につくのか</h2>
+    <p class="cta-sub">原因の構造はわかりました。あとは変え方だけです。<br>具体的な会話・距離感・好意の見せ方を、noteで解説しています。</p>
+    <a class="cta-btn" href="#" id="noteBtn">noteで続きを読む →</a>
+    <div class="note-price">¥500 ／ コーヒー1杯分</div>
+  </div>
+
+  <button class="print-btn" onclick="window.print()">このページをPDFで保存</button>
+
+</div>
+<script>
+// note URLはデプロイ時に設定
+const NOTE_URL = '';
+const btn = document.getElementById('noteBtn');
+if (NOTE_URL) btn.href = NOTE_URL;
+</script>
+</body>
+</html>
