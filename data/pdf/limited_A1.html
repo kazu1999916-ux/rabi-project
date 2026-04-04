@@ -66,6 +66,11 @@ body { font-family: 'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif;
   text-decoration: none; letter-spacing: .04em;
   box-shadow: 0 6px 24px var(--pink-glow); }
 .note-price { display: inline-block; margin-top: 12px; font-size: 12px; color: var(--muted); }
+.note-chapters { text-align: left; margin: 0 auto 24px; max-width: 400px; }
+.note-chapter { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--muted); padding: 8px 0; border-bottom: 1px solid var(--border); line-height: 1.5; }
+.note-chapter.highlight { color: var(--text); font-weight: 700; }
+.ch-num { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 50%; background: rgba(232,62,140,0.12); border: 1px solid rgba(232,62,140,0.3); color: var(--pink); font-size: 10px; font-weight: 800; margin-top: 1px; }
+.note-chapter.highlight .ch-num { background: rgba(232,62,140,0.25); }
 .print-btn { display: block; width: fit-content; margin: 32px auto 0;
   padding: 10px 24px; background: transparent;
   border: 1px solid var(--border); border-radius: 8px;
@@ -139,10 +144,27 @@ body { font-family: 'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif;
 
   <div class="cta-section">
     <div class="cta-eyebrow">NEXT STEP</div>
-    <h2 class="cta-title">写真とプロフィール文をどう変えれば<br>「会ってみたい」が生まれるのか</h2>
-    <p class="cta-sub">原因の構造はわかりました。あとは変え方だけです。<br>具体的な設計の方法を、noteで解説しています。</p>
+    <h2 class="cta-title">「会ってみたい」と思わせる<br>プロフィール設計を身につける</h2>
+    <p class="cta-sub">noteでは「どう変えるか」を5章にわたって具体的に解説しています。</p>
+    <div class="note-chapters">
+      <div class="note-chapter">
+        <span class="ch-num">1</span>30〜40代がアプリで失速する構造的な理由
+      </div>
+      <div class="note-chapter">
+        <span class="ch-num">2</span>プロフ弱者型——第一印象で負ける設計
+      </div>
+      <div class="note-chapter">
+        <span class="ch-num">3</span>会話失速型——会えない・続かない原因
+      </div>
+      <div class="note-chapter highlight">
+        <span class="ch-num">4</span>プロフィールを「人柄が伝わる場所」に変える
+      </div>
+      <div class="note-chapter highlight">
+        <span class="ch-num">5</span>会話の目的を「会う約束をとること」に絞る
+      </div>
+    </div>
     <a class="cta-btn" href="#" id="noteBtn">noteで続きを読む →</a>
-    <div class="note-price">¥500 ／ コーヒー1杯分</div>
+    <div class="note-price">¥980 ／ コーヒー2杯分</div>
   </div>
 
   <button class="print-btn" onclick="window.print()">このページをPDFで保存</button>
