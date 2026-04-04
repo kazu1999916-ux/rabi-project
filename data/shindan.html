@@ -94,6 +94,11 @@ body { font-family: 'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif;
 .result-hero h2 { font-size:clamp(20px,5.5vw,26px); font-weight:900; line-height:1.6;
   margin-bottom:10px; white-space:pre-line; }
 .result-hero .hero-sub { font-size:13px; color:var(--muted); line-height:1.75; }
+.line-sent-badge { display:none; align-items:center; justify-content:center; gap:8px;
+  background:rgba(6,199,85,0.1); border:1px solid rgba(6,199,85,0.35);
+  color:#06c755; font-size:12px; font-weight:700; border-radius:10px;
+  padding:10px 16px; margin:0 0 24px; }
+.line-sent-badge.show { display:flex; }
 
 /* 3層カード */
 .layer-cards { display:flex; flex-direction:column; gap:12px; margin-bottom:16px; }
@@ -204,6 +209,9 @@ body { font-family: 'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif;
 
 <!-- RESULT -->
 <div id="screen-result">
+  <div class="line-sent-badge" id="lineSentBadge">
+    <span>✓</span><span>結果と限定レポートをLINEに送信しました</span>
+  </div>
   <div class="result-hero">
     <div class="result-phase-tag" id="phaseTag"></div>
     <h2 id="resultTitle"></h2>
@@ -693,7 +701,9 @@ function showResult() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   const resultType = calcResult(answers);
-  sendResultToLine(resultType); // LINEトークに結果を送信（LIFF内のみ有効）
+  sendResultToLine(resultType).then(() => {
+    document.getElementById('lineSentBadge').classList.add('show');
+  });
   const d = RESULTS[resultType];
 
   // ヒーロー

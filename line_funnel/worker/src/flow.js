@@ -115,8 +115,23 @@ async function receiveLiffResult(userId, resultType, env) {
   const session = { step: 'done', resultType, createdAt: Date.now() };
   await saveSession(userId, session, env);
 
+  // 1. 結果Flexカード
   const { altText, contents } = buildResultFlex(resultType);
   await pushFlex(userId, altText, contents, env.LINE_TOKEN);
+
+  // 2. 限定コンテンツを自動送信（ボタン不要）
+  const { contentKey, pdfPath } = getResultMeta(resultType);
+  const content = LIMITED_CONTENTS[contentKey];
+  const pdfUrl = env.SITE_URL ? `${env.SITE_URL}/${pdfPath}` : null;
+  const messages = buildLimitedContentMessages(resultType, content, pdfUrl);
+
+  await pushText(userId, messages.slice(0, 2), env.LINE_TOKEN);
+  await pushQuickReply(
+    userId,
+    messages[2],
+    [{ label: 'noteを見る', text: 'note見る' }],
+    env.LINE_TOKEN,
+  );
 }
 
 // ── 限定コンテンツ配信 ────────────────────────────────────
