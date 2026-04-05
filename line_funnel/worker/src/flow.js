@@ -177,12 +177,12 @@ async function sendNoteUrl(userId, session, env) {
 
 function getResultMeta(resultType) {
   const map = {
-    L1: { contentKey: 'limited_L1', pdfPath: 'pdf/limited_L1.html', paidNoteKey: 'note_L', mainType: 'L' },
-    L2: { contentKey: 'limited_L2', pdfPath: 'pdf/limited_L2.html', paidNoteKey: 'note_L', mainType: 'L' },
-    K1: { contentKey: 'limited_K1', pdfPath: 'pdf/limited_K1.html', paidNoteKey: 'note_K', mainType: 'K' },
-    K2: { contentKey: 'limited_K2', pdfPath: 'pdf/limited_K2.html', paidNoteKey: 'note_K', mainType: 'K' },
-    A1: { contentKey: 'limited_A1', pdfPath: 'pdf/limited_A1.html', paidNoteKey: 'note_A', mainType: 'A' },
-    A2: { contentKey: 'limited_A2', pdfPath: 'pdf/limited_A2.html', paidNoteKey: 'note_A', mainType: 'A' },
+    L1: { contentKey: 'limited_L1', pdfPath: 'pdf/limited_L1.html', paidNoteKey: 'note_L1', mainType: 'L' },
+    L2: { contentKey: 'limited_L2', pdfPath: 'pdf/limited_L2.html', paidNoteKey: 'note_L2', mainType: 'L' },
+    K1: { contentKey: 'limited_K1', pdfPath: 'pdf/limited_K1.html', paidNoteKey: 'note_K1', mainType: 'K' },
+    K2: { contentKey: 'limited_K2', pdfPath: 'pdf/limited_K2.html', paidNoteKey: 'note_K2', mainType: 'K' },
+    A1: { contentKey: 'limited_A1', pdfPath: 'pdf/limited_A1.html', paidNoteKey: 'note_A1', mainType: 'A' },
+    A2: { contentKey: 'limited_A2', pdfPath: 'pdf/limited_A2.html', paidNoteKey: 'note_A2', mainType: 'A' },
   };
   return map[resultType] || map['L1'];
 }
