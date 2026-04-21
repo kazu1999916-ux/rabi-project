@@ -58,6 +58,12 @@ async function dispatch(userId, text, session, env) {
     return sendWelcome(userId, env);
   }
 
+  // ブラウザ診断からのタイプコード受信（L1, L2, K1, K2, A1, A2）
+  const validTypes = ['L1','L2','K1','K2','A1','A2'];
+  if (validTypes.includes(text.toUpperCase())) {
+    return receiveLiffResult(userId, text.toUpperCase(), env);
+  }
+
   // セッション状態で分岐
   if (session?.step === 'done') {
     return sendDoneGuide(userId, env);
@@ -141,24 +147,28 @@ export async function receiveLiffResult(userId, resultType, env) {
 // ── 限定コンテンツ配信 ────────────────────────────────────
 
 async function sendLimitedContent(userId, session, env) {
-  if (!session?.resultType) {
-    await sendWelcome(userId, env);
+  // セッションがある場合 → そのまま結果送信
+  if (session?.resultType) {
+    const { contentKey, pdfPath } = getResultMeta(session.resultType);
+    const content = LIMITED_CONTENTS[contentKey];
+    const pdfUrl = env.SITE_URL ? `${env.SITE_URL}/${pdfPath}` : null;
+    const messages = buildLimitedContentMessages(session.resultType, content, pdfUrl);
+
+    await pushText(userId, messages.slice(0, 2), env.LINE_TOKEN);
+    await pushQuickReply(
+      userId,
+      messages[2],
+      [{ label: 'noteを見る', text: 'note見る' }],
+      env.LINE_TOKEN,
+    );
     return;
   }
 
-  const { contentKey, pdfPath } = getResultMeta(session.resultType);
-  const content = LIMITED_CONTENTS[contentKey];
-  const pdfUrl = env.SITE_URL ? `${env.SITE_URL}/${pdfPath}` : null;
-  const messages = buildLimitedContentMessages(session.resultType, content, pdfUrl);
-
-  // 1通目（案内）・2通目（PDFリンク）→ テキスト
-  await pushText(userId, messages.slice(0, 2), env.LINE_TOKEN);
-
-  // 3通目（noteティザー）→ クイックリプライ
-  await pushQuickReply(
+  // セッションがない場合（ブラウザ診断から来た人）→ 色分けFlexボタン
+  await pushFlex(
     userId,
-    messages[2],
-    [{ label: 'noteを見る', text: 'note見る' }],
+    '診断結果を受け取る',
+    buildTypeSelectFlex(),
     env.LINE_TOKEN,
   );
 }
@@ -174,10 +184,72 @@ async function sendNoteUrl(userId, session, env) {
   const { paidNoteKey } = getResultMeta(session.resultType);
   const note = PAID_NOTES[paidNoteKey];
   const message = buildNoteMessage(note, session.resultType);
-  await pushText(userId, message, env.LINE_TOKEN);
+  if (message.type === 'flex') {
+    await pushFlex(userId, message.altText, message.contents, env.LINE_TOKEN);
+  } else {
+    await pushText(userId, message.text, env.LINE_TOKEN);
+  }
 }
 
 // ── ヘルパー ──────────────────────────────────────────────
+
+function buildTypeSelectFlex() {
+  const types = [
+    { code: 'L1', label: 'いい人止まり・無難化型', color: '#4a9eff' },
+    { code: 'L2', label: 'いい人止まり・遠慮過多型', color: '#4a9eff' },
+    { code: 'K1', label: '期待先行・妄想先行型', color: '#f0b429' },
+    { code: 'K2', label: '期待先行・不安過敏型', color: '#f0b429' },
+    { code: 'A1', label: 'アプリ失速・プロフ弱者型', color: '#4caf8a' },
+    { code: 'A2', label: 'アプリ失速・会話失速型', color: '#4caf8a' },
+  ];
+
+  return {
+    type: 'bubble',
+    size: 'giga',
+    header: {
+      type: 'box',
+      layout: 'vertical',
+      backgroundColor: '#08080f',
+      paddingAll: '20px',
+      contents: [
+        {
+          type: 'text',
+          text: '診断結果を受け取る',
+          size: 'lg',
+          weight: 'bold',
+          color: '#f0f0f8',
+        },
+        {
+          type: 'text',
+          text: 'ブラウザ診断で表示されたタイプを選んでください',
+          size: 'xs',
+          color: '#7070a0',
+          margin: 'sm',
+          wrap: true,
+        },
+      ],
+    },
+    body: {
+      type: 'box',
+      layout: 'vertical',
+      backgroundColor: '#0d0d1a',
+      paddingAll: '16px',
+      spacing: 'sm',
+      contents: types.map(t => ({
+        type: 'button',
+        action: {
+          type: 'message',
+          label: t.label,
+          text: t.code,
+        },
+        style: 'primary',
+        color: t.color,
+        height: 'sm',
+        margin: 'sm',
+      })),
+    },
+  };
+}
 
 function getResultMeta(resultType) {
   const map = {
